@@ -1,122 +1,57 @@
 # Project 1 Planning: The Unofficial Guide
 
-> Write this document before you write any pipeline code.
-> Your spec and architecture diagram are what you'll use to direct AI tools (Claude, Copilot, etc.) to generate your implementation — the more specific they are, the more useful the generated code will be.
-> Update the Retrieval Approach and Chunking Strategy sections if you change your approach during implementation.
-> Update this file before starting any stretch features.
-
----
-
 ## Domain
-
-<!-- What domain did you choose? Why is this knowledge valuable and hard to find through official channels? -->
-
----
+This guide covers student-generated reviews of RIT Mathematics Department professors, sourced from Rate My Professors. This knowledge is valuable because official RIT channels provide no insight into teaching style, grading difficulty, or exam structure — students rely entirely on word of mouth and informal reviews to make course decisions.
 
 ## Documents
-
-<!-- List your specific sources: URLs, subreddit names, forum threads, or file descriptions.
-     Aim for at least 10 sources that together cover different subtopics or perspectives within your domain. -->
-
 | # | Source | Description | URL or location |
 |---|--------|-------------|-----------------|
-| 1 | | | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
-| 5 | | | |
-| 6 | | | |
-| 7 | | | |
-| 8 | | | |
-| 9 | | | |
-| 10 | | | |
-
----
+| 1 | Rate My Professors | Reviews for Prof. Agyingi | documents/prof_agyingi_rmp.txt |
+| 2 | Rate My Professors | Reviews for Prof. Timberlake | documents/prof_timberlake_rmp.txt |
+| 3 | Rate My Professors | Reviews for Prof. Shahmohamad | documents/prof_shahmohamad_rmp.txt |
+| 4 | Rate My Professors | Reviews for Prof. Young | documents/prof_young_rmp.txt |
+| 5 | Rate My Professors | Reviews for Prof. Lopez | documents/prof_lopez_rmp.txt |
+| 6 | Rate My Professors | Reviews for Prof. Maki | documents/prof_maki_rmp.txt |
+| 7 | Rate My Professors | Reviews for Prof. Prevendoski | documents/prof_prevendoski_rmp.txt |
+| 8 | Rate My Professors | Reviews for Prof. Allan | documents/prof_allan_rmp.txt |
+| 9 | Rate My Professors | Reviews for Prof. Diute | documents/prof_diute_rmp.txt |
+| 10 | Rate My Professors | Reviews for Prof. Harkin | documents/prof_harkin_rmp.txt |
 
 ## Chunking Strategy
-
-<!-- How will you split documents into chunks?
-     State your chunk size (in tokens or characters), overlap size, and explain why those
-     numbers fit the structure of your documents.
-     A review-heavy corpus warrants different chunking than a long FAQ. -->
-
-**Chunk size:**
-
-**Overlap:**
-
-**Reasoning:**
-
----
+**Chunk size:** 300 characters
+**Overlap:** 50 characters
+**Reasoning:** Our documents are short student reviews — typically 1-4 sentences each. A 300-character chunk captures roughly one complete review without merging unrelated opinions from different students. Overlap of 50 characters ensures that if a key opinion spans a chunk boundary, it appears in at least one retrievable chunk. Larger chunks would merge multiple reviews and dilute specific opinions; smaller chunks would produce meaningless sentence fragments.
 
 ## Retrieval Approach
-
-<!-- Which embedding model are you using (e.g., all-MiniLM-L6-v2 via sentence-transformers)?
-     How many chunks will you retrieve per query (top-k)?
-     If you were deploying this for real users and cost wasn't a constraint, what tradeoffs
-     would you weigh in choosing a different embedding model — context length, multilingual
-     support, accuracy on domain-specific text, latency? -->
-
-**Embedding model:**
-
-**Top-k:**
-
-**Production tradeoff reflection:**
-
----
+**Embedding model:** all-MiniLM-L6-v2 via sentence-transformers
+**Top-k:** 5
+**Production tradeoff reflection:** For a real deployment, I would consider OpenAI's text-embedding-3-small for higher accuracy on domain-specific text, but it costs money per token and requires an API key. all-MiniLM-L6-v2 runs locally with no cost or rate limits, making it ideal for this project. If multilingual support were needed (e.g. international students reviewing in other languages), a multilingual model like paraphrase-multilingual-MiniLM-L12-v2 would be worth the tradeoff. Context length is not a major concern here since our chunks are short.
 
 ## Evaluation Plan
-
-<!-- List your 5 test questions with their expected correct answers.
-     Questions should be specific enough that you can judge whether the system's response
-     is right or wrong. "What are good dining halls?" is too vague.
-     "What do students say about wait times at [dining hall name] during lunch?" is testable. -->
-
 | # | Question | Expected answer |
 |---|----------|-----------------|
-| 1 | | |
-| 2 | | |
-| 3 | | |
-| 4 | | |
-| 5 | | |
-
----
+| 1 | What do students say about Professor Agyingi's teaching style? | Students say Agyingi is caring, accessible outside class, and good at making sure students understand the material despite having a strong accent. |
+| 2 | Is Professor Timberlake's class considered difficult? | Reviews should indicate whether Timberlake is regarded as easy, moderate, or hard based on student feedback. |
+| 3 | Would students recommend Professor Lopez? | Reviews should reflect whether students would take Lopez again based on their RMP ratings and comments. |
+| 4 | What do students say about Professor Shahmohamad's exams? | Reviews should describe exam difficulty, style, or grading approach based on student experience. |
+| 5 | Which RIT math professor is considered the most lenient grader? | Based on reviews, the system should identify which professor students describe as easiest or most generous with grades. |
 
 ## Anticipated Challenges
-
-<!-- What could go wrong? Name at least two specific risks with reasoning.
-     Consider: noisy or inconsistent documents, missing source attribution, off-topic
-     retrieval, chunks that split key information across boundaries. -->
-
-1.
-
-2.
-
----
-
-## Architecture
-
-<!-- Draw a diagram of your pipeline showing the five stages:
-     Document Ingestion → Chunking → Embedding + Vector Store → Retrieval → Generation
-     Label each stage with the tool or library you're using.
-     You can use ASCII art, a Mermaid diagram, or embed a sketch as an image.
-     You'll use this diagram as context when prompting AI tools to implement each stage. -->
-
----
+1. **Noisy documents:** The raw RMP text includes ads, button labels, dates, and "Helpful 👍 0" UI text mixed in with real reviews. The cleaning step must strip this without removing actual review content.
+2. **Chunk boundary splits:** A student opinion expressed across two sentences may get split across chunks, making retrieval return only half the context. The 50-character overlap partially mitigates this but may not catch all cases.
 
 ## AI Tool Plan
+- **Ingestion + chunking (Milestone 3):** I will prompt Claude with this planning.md and ask it to generate an ingest.py script that loads all .txt files from the documents/ folder, cleans them, and splits them into 300-character chunks with 50-character overlap.
+- **Embedding + retrieval (Milestone 4):** I will prompt Claude with the Retrieval Approach section and ask it to generate embed.py that embeds chunks using all-MiniLM-L6-v2 and stores them in ChromaDB, plus a retrieve() function that returns top-5 chunks for a query.
+- **Generation + interface (Milestone 5):** I will prompt Claude with the grounding requirement and ask it to generate app.py using Gradio that takes a query, retrieves chunks, and returns a grounded answer with source attribution.
 
-<!-- For each part of the pipeline below, describe:
-     - Which AI tool you plan to use (Claude, Copilot, ChatGPT, etc.)
-     - What you'll give it as input (which sections of this planning.md, which requirements)
-     - What you expect it to produce
-     - How you'll verify the output matches your spec
-
-     "I'll use AI to help me code" is not a plan.
-     "I'll give Claude my Chunking Strategy section and ask it to implement chunk_text()
-     with my specified chunk size and overlap" is a plan. -->
-
-**Milestone 3 — Ingestion and chunking:**
-
-**Milestone 4 — Embedding and retrieval:**
-
-**Milestone 5 — Generation and interface:**
+## Architecture
+Document Ingestion (load .txt files from documents/)
+        ↓
+Chunking (300 chars, 50 char overlap)
+        ↓
+Embedding (all-MiniLM-L6-v2) + Vector Store (ChromaDB)
+        ↓
+Retrieval (top-5 semantic search)
+        ↓
+Generation (Groq llama-3.3-70b-versatile) → Grounded answer + source citation
